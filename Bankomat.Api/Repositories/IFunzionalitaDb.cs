@@ -1,4 +1,5 @@
-﻿using Bankomat.Api.Models;
+﻿using Bankomat.Api.Dto;
+using Bankomat.Api.Models;
 
 namespace Bankomat.Api.Repositories
 {

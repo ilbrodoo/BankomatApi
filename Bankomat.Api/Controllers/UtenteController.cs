@@ -88,7 +88,7 @@ public class UtenteController : ControllerBase
 
             await _clienteDb.CreateUtenteAsync(nuovoUtenteModels);
 
-            return CreatedAtAction("GetClienteById", new { ClienteId = nuovoUtenteModels.Id }, nuovoUtenteModels);
+            return Ok();
 
         }
         catch (Exception ex)
@@ -124,20 +124,20 @@ public class UtenteController : ControllerBase
         }
     }
 
-    [HttpPut("aggiorna password/{ClienteId}")]
+    [HttpPut("aggiornaPassword/{ClienteId}")]
     public async Task<IActionResult> CambiaPassword(int ClienteId, [FromBody] string nuovaPassword)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(nuovaPassword))
             {
-                return BadRequest("Username e password non possono essere vuote");
+                return BadRequest(new { error = "Username e password non possono essere vuote" });
             }
             var utente = await _clienteDb.GetClienteByIdAsync(ClienteId);
 
             if (utente == null)
             {
-                return NotFound($"Utente con ID {ClienteId} non trovato");
+                return NotFound(new { error = $"Utente con ID {ClienteId} non trovato" });
             }
 
             // Applica la nuova password
@@ -145,11 +145,11 @@ public class UtenteController : ControllerBase
 
             await _clienteDb.UpdateUtenteAsync(ClienteId, utente);
 
-            return Ok($"Password utente con ID {ClienteId} aggiornata con successo");
+            return Ok();
         }
         catch (Exception ex)
         {
-            return BadRequest($"Errore nell'aggiornamento della password utente: {ex.Message}");
+            return BadRequest(new {error = $"Errore nell'aggiornamento della password utente: {ex.Message}"});
         }
     }
 

@@ -1,4 +1,6 @@
-﻿using Bankomat.Api.Models;
+﻿using AutoMapper;
+using Bankomat.Api.Dto;
+using Bankomat.Api.Models;
 using Bankomat.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,17 +11,23 @@ namespace Bankomat.Api.Controllers
     public class FunzionalitaController : Controller
     {
         private IFunzionalitaDb _funzionalitaDb;
-
-        public FunzionalitaController(IFunzionalitaDb funzionalitaDb) 
+        private IMapper _mapper;
+        public FunzionalitaController(IFunzionalitaDb funzionalitaDb, IMapper mapper) 
         {
             _funzionalitaDb = funzionalitaDb;
+            _mapper = mapper;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Funzionalitum>>> Get() 
+       [HttpGet]
+        public async Task<ActionResult<IEnumerable<FunzionalitaDto>>> Get() 
         {
-            var funzioni = await _funzionalitaDb.GetAllAsync();
-            return Ok(funzioni);
+            IEnumerable<Funzionalitum> funzioni = await _funzionalitaDb.GetAllAsync();
+            var funzioniDaStampare = _mapper.Map<List<FunzionalitaDto>>(funzioni.ToList());
+
+            return Ok(funzioniDaStampare);
         }
+
+
+
     }
 }
