@@ -29,12 +29,28 @@ public class UtenteController : ControllerBase
         IEnumerable<Utenti> clienti = await _clienteDb.GetAllAsync();
         var clientiDaStampare = _mapper.Map<IEnumerable<UtentiDto>>(clienti);
         return Ok(clientiDaStampare);
+        //return Ok(clienti);
     }
 
     [HttpGet("{ClienteId}")]
-    public async Task<ActionResult<Utenti>> GetClienteById(int ClienteId)
+    public async Task<ActionResult<UtentiDto>> GetClienteById(int ClienteId)
     {
         var Cliente = await _clienteDb.GetClienteByIdAsync(ClienteId);
+        if (Cliente == null)
+        {
+            return BadRequest(new { error = "Non trovato" });
+        }
+        else
+        {
+            var clienteDto = _mapper.Map<UtentiDto>(Cliente);
+            return Ok(clienteDto);
+        }
+    }
+
+    [HttpGet("{bancaId}")]
+    public async Task<ActionResult<Utenti>> GetClienteByIdBanca(int bancaId)
+    {
+        var Cliente = await _clienteDb.GetClienteByIdAsync(bancaId);
         if (Cliente == null)
         {
             return BadRequest("Non trovato");
@@ -52,35 +68,36 @@ public class UtenteController : ControllerBase
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest("Invalid model state");
+                return BadRequest(new { error = "Invalid model state" });
             }
 
             if (string.IsNullOrWhiteSpace(nuovoUtente.NomeUtente) || string.IsNullOrWhiteSpace(nuovoUtente.Password))
             {
-                return BadRequest("Username e password non possono essere vuote");
+                return BadRequest(new { error = "Username e password non possono essere vuote" });
             }
             if (_clienteDb.IsUsernameUnique(nuovoUtente.NomeUtente))
             {
-                return BadRequest("Username esistente");
+                return BadRequest(new { error = "Username esistente" });
             }
             if (!_clienteDb.BancaExists(nuovoUtente.IdBanca))
             {
-                return BadRequest($"La banca con ID {nuovoUtente.IdBanca} non esiste");
+                return BadRequest(new { error = $"La banca con ID {nuovoUtente.IdBanca} non esiste" });
             }
             var nuovoUtenteModels = _mapper.Map<Utenti>(nuovoUtente);
             nuovoUtenteModels.ContiCorrentes = new List<ContiCorrente> { new ContiCorrente { Saldo = 0 } };
 
             await _clienteDb.CreateUtenteAsync(nuovoUtenteModels);
 
-            return CreatedAtAction("GetClientiAsync", new { Id = nuovoUtenteModels.Id }, nuovoUtenteModels);
+            return CreatedAtAction("GetClienteById", new { ClienteId = nuovoUtenteModels.Id }, nuovoUtenteModels);
+
         }
         catch (Exception ex)
         {
             // Visualizza dettagli sull'errore interno
-            return BadRequest($"Errore Creando Utente: {ex.Message} - Dettagli: {ex.InnerException?.Message}");
+            return BadRequest(new { error = $"Errore Creando Utente: {ex.Message} - Dettagli: {ex.InnerException?.Message}" });
         }
-
     }
+
 
 
     [HttpPut("{ClienteId}")]
@@ -92,21 +109,21 @@ public class UtenteController : ControllerBase
 
             if (utente == null)
             {
-                return NotFound($"Utente con ID {ClienteId} non trovato");
+                return NotFound(new { message = $"Utente con ID {ClienteId} non trovato" });
             }
 
             utente.Bloccato = bloccato;
 
-            await _clienteDb.UpdateUtenteAsync(ClienteId ,utente);
+            await _clienteDb.UpdateUtenteAsync(ClienteId, utente);
 
-            return Ok($"Stato blocco utente con ID {ClienteId} aggiornato con successo");
+            return Ok(new { message = $"Stato blocco utente con ID {ClienteId} aggiornato con successo" });
         }
         catch (Exception ex)
         {
-
-            return BadRequest($"Errore nell'aggiornamento dello stato blocco utente: {ex.Message}");
+            return BadRequest(new { error = $"Errore nell'aggiornamento dello stato blocco utente: {ex.Message}" });
         }
     }
+
     [HttpPut("aggiorna password/{ClienteId}")]
     public async Task<IActionResult> CambiaPassword(int ClienteId, [FromBody] string nuovaPassword)
     {
@@ -136,21 +153,21 @@ public class UtenteController : ControllerBase
         }
     }
 
-    [HttpDelete("ClienteId")]
+    [HttpDelete("{ClienteId}")]
     public async Task<IActionResult> EliminaUtente(int ClienteId)
     {
         try
         {
             await _clienteDb.DeleteUtenteAsync(ClienteId);
 
-            return Ok("Eliminazione Effettuata");
+            return Ok(new { message = "Eliminazione Effettuata" });
         }
         catch (Exception ex)
         {
-
-            return BadRequest($"Errore : {ex.Message}");
+            return BadRequest(new { error = $"Errore : {ex.Message}" });
         }
     }
+
 
 
 }

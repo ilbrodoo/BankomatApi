@@ -51,6 +51,14 @@ namespace Bankomat.Api.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<Utenti?> GetClienteByIdBancaAsync(int bancaId)
+        {
+            return await _ctx.Utentis
+                .Where(cliente => cliente.IdBanca == bancaId)
+                .FirstOrDefaultAsync();
+        }
+
+
         public async Task UpdateUtenteAsync(int ClienteId, Utenti ClienteModificato)
         {
             var clienteSelezionato = await _ctx.Utentis.FirstOrDefaultAsync(cliente => cliente.Id == ClienteId);

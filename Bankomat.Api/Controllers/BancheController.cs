@@ -18,7 +18,7 @@ namespace Bankomat.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Banche>>> GetClientisAsync()
+        public async Task<ActionResult<IEnumerable<Banche>>> GetBancaAsync()
         {
             IEnumerable<Banche> banche = await _bancheDb.GetAllAsync();
 
@@ -26,7 +26,7 @@ namespace Bankomat.Api.Controllers
         }
 
         [HttpGet("{BancaId}")]
-        public async Task<ActionResult<Utenti>> GetClienteById(int BancaId)
+        public async Task<ActionResult<Utenti>> GetBancaById(int BancaId)
         {
             var Cliente = await _bancheDb.GetBancaByIdAsync(BancaId);
             if (Cliente == null)
